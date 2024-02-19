@@ -9,7 +9,11 @@ import shutil
 from subprocess import DEVNULL, call
 
 from rich.console import Console
-from torch.utils.cpp_extension import _get_build_directory, load
+from torch.utils.cpp_extension import (
+    _get_build_directory,
+    _import_module_from_library,
+    load,
+)
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -57,14 +61,7 @@ except ImportError:
         if os.listdir(build_dir) != []:
             # If the build exists, we assume the extension has been built
             # and we can load it.
-
-            _C = load(
-                name=name,
-                sources=sources,
-                extra_cflags=extra_cflags,
-                extra_cuda_cflags=extra_cuda_cflags,
-                extra_include_paths=extra_include_paths,
-            )
+            _C = _import_module_from_library(name, build_dir, is_python_module=True)
         else:
             # Build from scratch. Remove the build directory just to be safe: pytorch jit might stuck
             # if the build directory exists.
